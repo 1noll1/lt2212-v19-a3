@@ -7,7 +7,7 @@ import re
 from nltk import ngrams
 import random
 
-'''Definitely not done
+'''Definitely not done :::))))
 '''
 
 parser = argparse.ArgumentParser(description="Convert text to features")
@@ -35,7 +35,7 @@ else:
     print("Ending at last line of file.")
 
 if args.endline and args.startline:
-    if args.endline < args.startline: #make me work
+    if args.endline < args.startline: #make me work please?
         raise ValueError("Endline value must be greater than startline!")
 
 if args.testlines and args.endline and args.startline:
@@ -45,17 +45,15 @@ if args.testlines and args.endline and args.startline:
     print("Test sentences: {}".format(num_range))
 
 print("Constructing {}-gram model.".format(args.ngram))
-print("Writing table to {}.".format(args.outputfile))
+# print("Writing table to {}.".format(args.outputfile))
+
+testlines = []
+trainlines = []
 
 def collect_data(): 
     '''Starting symbol: <s>
     '''
     vocab = ['<s>']
-
-    testlines = []
-    trainlines = []
-
-    # output_feature_table = []
 
     with open(args.inputfile) as f:
         position = 0 #keep track of line index
@@ -71,15 +69,14 @@ def collect_data():
                     testlines.extend(line)
                 else:
                     trainlines.extend(line)
-            # if position == args.endline: #pick line to be used as output feature table
-            #     output_feature_table.extend(line)
-
-    # print(output_feature_table)
 
     vocab = set(vocab)
+    return vocab
+
+def encode_onehot(vocab):
+    '''Make hot one encodings of all words in vocab
+    '''
     empty_vector = np.zeros(len(vocab), dtype=int)
-    #print(len(vocab))
-    #print(vocab)
     word_index = {j:i for i,j in enumerate(vocab)}
 
     one_hot = {w: np.zeros(len(vocab), dtype=int) for w in vocab}
@@ -90,11 +87,13 @@ def collect_data():
         one_hot[word][i] = 1 
     #print(one_hot)
 
-    return vocab, one_hot
+    return one_hot
     #print(word_index)
 
-def construct_ngrams(text, N=None):
-    vocab, one_hot = collect_data()
+def construct_vectors(text, one_hot, N=None):
+    '''Create one hot encoded ngrams:
+    [hot, hot, class]
+    '''
     N = args.ngram
     grams = ngrams(vocab, N, pad_left=True, pad_right=False, left_pad_symbol='<s>')
     #print(grams)
@@ -112,26 +111,22 @@ def construct_ngrams(text, N=None):
     return onehot_vectors
     # print(onehot_vectors)
 
-def gen_output(dataset, setname):
-    filename = args.outputfile + '{}'.format('_' + setname)
-    # train_file = args.outputfile + '{}'.format('_train')
-    # test_file = args.outputfile + '{}'.format('_test')
+def gen_output(vector, j):
+    filename = args.outputfile + '_{}'.format(j)
 
-    data = pd.DataFrame(dataset)   
-    # train_data = pd.DataFrame(trainset)
-    # test_data = pd.DataFrame(testset)
+    data = pd.DataFrame(vector)
 
-    #print(df)
+    data = pd.DataFrame(data)   
+    print("Writing table to {}.".format(filename))
     data.to_csv(filename, index=False)
-    # train_data.to_csv(train_file, index=False)
-    # test_data.to_csv(test_file, index=False)
     
 vocab = collect_data()
-# construct_ngrams(vocab)
-data = construct_ngrams(vocab)
-for i in ['train', 'test']:
-    # construct_ngrams(data, N)
-    gen_output(construct_ngrams(vocab), i)
+one_hot = encode_onehot(vocab)
+
+for i,j in [(trainlines, 'train'), (testlines, 'test')]:
+    vector = construct_vectors(i, one_hot, N=None)
+    # construct_vectors(data, N)
+    gen_output(vector, j)
 
     
 # THERE ARE SOME CORNER CASES YOU HAVE TO DEAL WITH GIVEN THE INPUT
