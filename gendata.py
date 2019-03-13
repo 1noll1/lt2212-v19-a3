@@ -39,39 +39,38 @@ if args.endline and args.startline:
         raise ValueError("Endline value must be greater than startline!")
 
 if args.testlines and args.endline and args.startline:
-    #pick a random number in range(startline,endline) to use as test data
+    #pick random numbers in range(startline,endline) to use as test data
     num_range = [i for i in range(args.startline, args.endline)]
-    random.shuffle(num_range)
-    print("Test sentences: {}".format(num_range))
+    num_range = random.sample(num_range, args.testlines)
+    print("Test sentences on lines: {}".format(num_range))
 
 print("Constructing {}-gram model.".format(args.ngram))
-# print("Writing table to {}.".format(args.outputfile))
-
-testlines = []
-trainlines = []
 
 def collect_data(): 
     '''Starting symbol: <s>
+    If line is among the T random lines in num_list, add it to the test data.
+    Otherwise add it to training.
     '''
     vocab = ['<s>']
+    testlines = []
+    trainlines = []
 
     with open(args.inputfile) as f:
         position = 0 #keep track of line index
-        if args.startline:
-            for i in range(args.startline): #start at later line
-                line = f.readline()
-        for line in f:
+        for i in range(args.startline): #start at later line
+            position += 1
+            line = f.readline()
+        while position < args.endline:
+            line = f.readline()
             position += 1
             line = [word.split("/")[0] for word in line.split()] #all cred to user Kevin@StackOverflow: https://stackoverflow.com/questions/15365046/python-removing-pos-tags-from-a-txt-file
             vocab.extend(line)
-            if args.testlines:
-                if position in num_range: #select lines to use as test data
-                    testlines.extend(line)
-                else:
-                    trainlines.extend(line)
+            if position in num_range: #select lines to use as test data
+                testlines.extend(line)
+            else:
+                trainlines.extend(line)
 
-    vocab = set(vocab)
-    return vocab
+    return vocab, trainlines, testlines
 
 def encode_onehot(vocab):
     '''Make hot one encodings of all words in vocab
@@ -85,49 +84,46 @@ def encode_onehot(vocab):
         i = word_index[word]
         #print(one_hot[word])
         one_hot[word][i] = 1 
-    #print(one_hot)
 
     return one_hot
-    #print(word_index)
 
 def construct_vectors(text, one_hot, N=None):
     '''Create one hot encoded ngrams:
     [hot, hot, class]
     '''
+    #print(text)
     N = args.ngram
-    grams = ngrams(vocab, N, pad_left=True, pad_right=False, left_pad_symbol='<s>')
-    #print(grams)
-    # print(list(grams))
+    grams = ngrams(text, N, pad_left=True, pad_right=False, left_pad_symbol='<s>')
 
     onehot_vectors = []
 
-    for gram in grams:
+    for gram in list(grams):
         #print(gram)
-        wordy = [gram[2]]
-        vector = [one_hot[w] for w in gram[:-1]]
-        vector.extend(wordy)
-        onehot_vectors.append(vector)
+        wordy = gram[-1]
+        vector = []
+        for w in gram[:-1]:
+            vector += list(one_hot[w])
+        vector.append(wordy)
+        onehot_vectors.append(vector)   
 
     return onehot_vectors
     # print(onehot_vectors)
 
 def gen_output(vector, j):
     filename = args.outputfile + '_{}'.format(j)
-
+    print('Generating data frame...')
     data = pd.DataFrame(vector)
 
-    data = pd.DataFrame(data)   
+    # data = pd.DataFrame(data)   
     print("Writing table to {}.".format(filename))
     data.to_csv(filename, index=False)
     
-vocab = collect_data()
+
+vocab, trainlines, testlines = collect_data()
 one_hot = encode_onehot(vocab)
 
 for i,j in [(trainlines, 'train'), (testlines, 'test')]:
     vector = construct_vectors(i, one_hot, N=None)
-    # construct_vectors(data, N)
     gen_output(vector, j)
 
-    
-# THERE ARE SOME CORNER CASES YOU HAVE TO DEAL WITH GIVEN THE INPUT
-# PARAMETERS BY ANALYZING THE POSSIBLE ERROR CONDITIONS.
+
