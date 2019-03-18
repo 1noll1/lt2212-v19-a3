@@ -18,9 +18,9 @@ train.py outputfile_train model
 test.py outputfile_test model.p
 
 | Commands | Accuracy  | Perplexity |
-|gendata.py brown_rga.txt outputfile 50 -E500 | ------------- | ------------- |
-|------------- | Content Cell  | Content Cell  |
-|------------- | Content Cell  | Content Cell  |
+| gendata.py brown_rga.txt outputfile 50 -E500 | ------------- | ------------- |
+| ------------- | Content Cell  | Content Cell  |
+| ------------- | Content Cell  | Content Cell  |
 
 ## Reporting for Part Bonus 
 
