@@ -17,7 +17,7 @@ For simplicity I made 'testlines' a required argument. I just chose a random def
 
 **Note: In test.py, since smoothing would be terribly cumbersome, all unknown labels are assigned the lowest probability of the distribution returned by pred_log_proba.**
 
-As is to be expected, trigrams are more accurate than bigrams. Also, in lines 500-1000 there are considerably less unrecognized classes than in 1-500, which is most likely the reason behind the higher accuracy/lower perplexity in the former.
+In lines 500-1000 there are considerably less unrecognized classes than in 1-500, which is most likely the reason behind the higher accuracy/lower perplexity in the former.
 
  Commands | Accuracy  | Perplexity | No. unrecognized classes 
  -------- | --------- | ---------- | ------------------------
