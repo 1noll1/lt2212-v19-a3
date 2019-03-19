@@ -15,24 +15,19 @@ parser.add_argument("modelfile", type=str,
 args = parser.parse_args()
 
 def train_me():
-    '''Separate classes from vectors and train that stuff
+    '''Separate classes from vectors and train the model
     '''
+    print("Loading data from file {}.".format(args.datafile))
     data = pd.read_csv(args.datafile)
 
     classes = list(data.iloc[:, -1])
     vectors = data.iloc[:, :-1]
 
-    logreg = LogisticRegression(solver='lbfgs', multi_class='multinomial',n_jobs=-1)
+    logreg = LogisticRegression(solver='lbfgs', multi_class='multinomial',max_iter=1000)
+    print("Training {}-gram model.".format(args.ngram))
     model = logreg.fit(vectors,classes)
+    print("Writing table to {}.".format(args.modelfile))
     pickle.dump(model, open(args.modelfile + '.p', 'wb'))
 
 train_me()
-
-print("Loading data from file {}.".format(args.datafile))
-print("Training {}-gram model.".format(args.ngram))
-print("Writing table to {}.".format(args.modelfile))
-
-# YOU WILL HAVE TO FIGURE OUT SOME WAY TO INTERPRET THE FEATURES YOU CREATED.
-# IT COULD INCLUDE CREATING AN EXTRA COMMAND-LINE ARGUMENT OR CLEVER COLUMN
-# NAMES OR OTHER TRICKS. UP TO YOU.
 

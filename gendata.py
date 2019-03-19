@@ -7,13 +7,11 @@ import re
 from nltk import ngrams
 import random
 
-'''Definitely not done :::))))
-'''
 
 parser = argparse.ArgumentParser(description="Convert text to features")
 parser.add_argument("-N", "--ngram", metavar="N", dest="ngram", type=int, default=3, help="The length of ngram to be considered (default 3).")
 parser.add_argument("-S", "--start", metavar="S", dest="startline", type=int,
-                    default=0,
+                    default=1,
                     help="What line of the input data file to start from. Default is 0, the first line.")
 parser.add_argument("-E", "--end", metavar="E", dest="endline",
                     type=int, default=None,
@@ -22,7 +20,7 @@ parser.add_argument("inputfile", type=str,
                     help="The file name containing the text data.")
 parser.add_argument("outputfile", type=str,
                     help="The name of the output file for the feature table.")
-parser.add_argument("-T", "--testlines", type=int, metavar="T",
+parser.add_argument("testlines", type=int, default=10,
                     help="Number of randomly selected lines within range -S and -E will be designated as testing data.")
 
 args = parser.parse_args()
@@ -38,13 +36,13 @@ if args.endline and args.startline:
     if args.endline < args.startline: #make me work please?
         raise ValueError("Endline value must be greater than startline!")
 
-if args.testlines and args.endline and args.startline:
-    #pick random numbers in range(startline,endline) to use as test data
-    num_range = [i for i in range(args.startline, args.endline)]
-    num_range = random.sample(num_range, args.testlines)
-    print("Test sentences on lines: {}".format(num_range))
+if not args.testlines:
+    print('Please specify the desired number of lines for the test data.')
 
-print("Constructing {}-gram model.".format(args.ngram))
+#pick T random numbers in range(startline,endline) to use as test data
+num_range = [i for i in range(args.startline, args.endline)]
+num_range = random.sample(num_range, args.testlines)
+print("Test sentences on lines: {}".format(num_range))
 
 def collect_data(): 
     '''Starting symbol: <s>
@@ -83,15 +81,19 @@ def encode_onehot(vocab):
     for word in list(one_hot): #iterate over vocabulary keys while it's changing
         i = word_index[word]
         #print(one_hot[word])
-        one_hot[word][i] = 1 
+        one_hot[word][i] = 1
+
+    for array_ in one_hot:
+        array_ = list(array_) 
 
     return one_hot
 
 def construct_vectors(text, one_hot, N=None):
     '''Create one hot encoded ngrams:
-    [hot, hot, class]
+    [hot+hot, class]
     '''
     #print(text)
+    print("Constructing {}-gram model.".format(args.ngram))
     N = args.ngram
     grams = ngrams(text, N, pad_left=True, pad_right=False, left_pad_symbol='<s>')
 
@@ -107,14 +109,12 @@ def construct_vectors(text, one_hot, N=None):
         onehot_vectors.append(vector)   
 
     return onehot_vectors
-    # print(onehot_vectors)
 
 def gen_output(vector, j):
     filename = args.outputfile + '_{}'.format(j)
     print('Generating data frame...')
     data = pd.DataFrame(vector)
-
-    # data = pd.DataFrame(data)   
+ 
     print("Writing table to {}.".format(filename))
     data.to_csv(filename, index=False)
     
