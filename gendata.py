@@ -68,12 +68,12 @@ def collect_data():
             else:
                 trainlines.extend(line)
 
+    vocab = set(vocab)
     return vocab, trainlines, testlines
 
 def encode_onehot(vocab):
     '''Make hot one encodings of all words in vocab
     '''
-    empty_vector = np.zeros(len(vocab), dtype=int)
     word_index = {j:i for i,j in enumerate(vocab)}
 
     one_hot = {w: np.zeros(len(vocab), dtype=int) for w in vocab}

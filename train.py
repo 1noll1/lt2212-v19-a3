@@ -22,8 +22,9 @@ def train_me():
 
     classes = list(data.iloc[:, -1])
     vectors = data.iloc[:, :-1]
+    vectors = np.array(vectors)
 
-    logreg = LogisticRegression(solver='lbfgs', multi_class='multinomial',max_iter=1000)
+    logreg = LogisticRegression(verbose=1,solver='lbfgs', multi_class='multinomial',max_iter=1000,n_jobs=-1)
     print("Training {}-gram model.".format(args.ngram))
     model = logreg.fit(vectors,classes)
     print("Writing table to {}.".format(args.modelfile))
