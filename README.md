@@ -13,6 +13,8 @@ For simplicity I made 'testlines' a required argument. I just chose a random def
 2. train.py outputfile_train model
 3. test.py outputfile_test model.p
 
+-POS for bonus part.
+
 ## Reporting for Part 4
 
 **Note: In test.py, since smoothing would be terribly cumbersome, all unknown labels are assigned the lowest probability of the distribution returned by pred_log_proba.**
@@ -40,4 +42,15 @@ What's going on in the 500 line data – I actually have no idea.
 
 ## Reporting for Part Bonus 
 
-(Delete if you aren't doing the bonus.)
+What happens when we use parts of speech instead of simple word representations?
+Obviously, our dimensionality decreases significantly. The number of possible features is now reduced to the number of parts of speech – naturally quite few. First of all, this frees a lot of computational power for us to use. Moreover, it makes for more accurate generalisations. There are simply fewer possible patterns to keep track of. As there are ways fewer unrecognised classes and more reoccuring patterns, our model is now way less "perplexed".
+
+ Commands | Accuracy  | Perplexity | No. unrecognized classes 
+ -------- | --------- | ---------- | ------------------------
+ 10 -E100 -N2 -POS | 21.468926553672315 % | 9.957578770049116 | 10 
+ 10 -E100 -N3 -POS | 25.157232704402517 %  | 8.101553201727222 | 9 
+ 10 -E100 -N4 -POS | 18.902439024390244 %  | 9.279334998979055 | 1 
+ 
+ 50 -E500 -N2 -POS | 27.8503046127067 %  | 7.127667757014879 | 6
+ 50 -E500 -N3 -POS | 30.190311418685123 % | 6.553241245979299 | 2
+ 50 -E500 -N4 -POS | 31.556683587140437 % | 6.640151718730408 | 3
